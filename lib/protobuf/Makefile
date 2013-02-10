@@ -2,7 +2,7 @@ CAMLP4=
 OCAMLC_OPTS=-package core,bitstring,bitstring.syntax -syntax camlp4o
 OCAMLOPT_OPTS=-for-pack Protobuf $(OCAMLC_OPTS)
 
-cources=varint.ml
+cources=varint.ml protocol.ml
 
 sources=$(cources)
 
