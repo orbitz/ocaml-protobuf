@@ -4,23 +4,23 @@ type t = Int64.t
 
 type error = [ `Incomplete | `Overflow ]
 
-let s7 i = Int64.shift_left i 7
-let (+)  = Int64.(+)
-let i64  = Int64.of_int
+let (<<<) l r = Int64.shift_left l r
+let (+^)      = Int64.(+)
+let i64       = Int64.of_int
 
-let rec read_byte acc bits =
+let rec read_byte n acc bits =
   bitmatch bits with
     | { true  : 1
       ; b0    : 7
       ; rest  : -1 : bitstring
       } ->
-      read_byte (s7 (acc + i64 b0)) rest
+      read_byte (n + 1) (acc +^ (i64 b0 <<< (7 * n))) rest
     | { false : 1
       ; b0    : 7
       ; rest  : -1 : bitstring
       } ->
-      Ok (acc + i64 b0, rest)
+      Ok (acc +^ (i64 b0 <<< (7 * n)), rest)
     | { _ } ->
       Error `Incomplete
 
-let read = read_byte (i64 0)
+let read = read_byte 0 (i64 0)

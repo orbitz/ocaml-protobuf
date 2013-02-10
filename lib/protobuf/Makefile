@@ -38,8 +38,5 @@ protobuf.cma: protobuf.cmo
 protobuf.cmo: $(byte_cmo)
 	ocamlfind ocamlc -pack -o $@ $^
 
-clean:
-	-rm *.cmxa *.cmi *.cmx *.cmo *.o .d
-
 # Dependencies
 include ../Ocamlrules.mk.in
