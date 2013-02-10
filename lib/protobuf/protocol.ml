@@ -35,6 +35,13 @@ let v_type_mask = Int64.of_int 7
 let extract_v_type field =
   Int64.to_int_exn (Int64.bit_and field v_type_mask)
 
+let int_of_int64 n =
+  match Int64.to_int n with
+    | Some n ->
+      Ok n
+    | None ->
+      Error `Incomplete
+
 let read_varint bits =
   let open Result.Monad_infix in
   Varint.read bits >>= fun (n, rest) ->
@@ -50,7 +57,16 @@ let read_fixed64 bits =
       Error `Incomplete
 
 let read_sequence bits =
-  Error `Incomplete
+  let open Result.Monad_infix in
+  Varint.read bits    >>= fun (length, rest) ->
+  int_of_int64 length >>= fun length ->
+  bitmatch rest with
+    | { seq : length * 8 : bitstring
+      ; rest : -1 : bitstring
+      } ->
+      Ok (Value.Sequence seq, rest)
+    | { _ } ->
+      Error `Incomplete
 
 let read_fixed32 bits =
   let module Int32 = Old_int32 in
