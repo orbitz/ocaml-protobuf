@@ -4,10 +4,10 @@ type error = [ `Incomplete | `Overflow | `Unknown_type | `Wrong_type ]
 
 module State = struct
   type t = { bits    : Bitstring.bitstring
-	   ; skipped : Protocol.Value.t Int32.Map.t
+	   ; skipped : Protocol.Value.t Int.Map.t
 	   }
 
-  let create bits = { bits; skipped = Int32.Map.empty }
+  let create bits = { bits; skipped = Int.Map.empty }
   let append t b = { t with bits = Bitstring.concat [t.bits; b] }
 end
 
@@ -18,16 +18,37 @@ type tag = int
 let run t s = t.run s
 
 let rec read tag f s =
+  let module S = State in
+  let open Result.Monad_infix in
+  match Int.Map.find s.S.skipped tag with
+    | Some value ->
+      let s = { s with S.skipped = Int.Map.remove s.S.skipped tag } in
+      f value >>= fun a ->
+      Ok (a, s)
+    | None ->
+      read_new tag f s
+and read_new tag f s =
   let module P = Protocol in
   let module F = P.Field in
+  let module S = State in
   let open Result.Monad_infix in
-  P.read_next s.State.bits >>= function
+  P.read_next s.S.bits >>= function
     | (field, bits) when F.tag field = tag -> begin
       f (F.value field) >>= fun a ->
-      Ok (a, {s with State.bits = bits })
+      Ok (a, {s with S.bits = bits })
     end
-    | _ ->
-      failwith "nyi"
+    | (field, bits) ->
+      let skipped =
+	Int.Map.add
+	  ~key:(F.tag field)
+	  ~data:(F.value field)
+	  s.S.skipped
+      in
+      let s = { S.bits    = bits
+	      ;   skipped = skipped
+	      }
+      in
+      read tag f s
 
 let make_t tag f =
   { run = read tag f }
@@ -99,7 +120,20 @@ let string tag =
       | _ ->
 	Error `Wrong_type)
 
-  type 'a _t = 'a t
+let embd_msg tag r =
+  let open Protocol.Value in
+  let open Result.Monad_infix in
+  make_t
+    tag
+    (function
+      | Sequence bits ->
+	let s = State.create bits in
+	run r s >>= fun (a, _) ->
+	Ok a
+      | _ ->
+	Error `Wrong_type)
+
+type 'a _t = 'a t
 
 include (Monad.Make (struct
   type 'a t = 'a _t
