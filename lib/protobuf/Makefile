@@ -2,7 +2,7 @@ CAMLP4=
 OCAMLC_OPTS=-package core,bitstring,bitstring.syntax -syntax camlp4o
 OCAMLOPT_OPTS=-for-pack Protobuf $(OCAMLC_OPTS)
 
-cources=varint.ml protocol.ml
+cources=varint.ml protocol.ml reader.ml
 
 sources=$(cources)
 
@@ -22,9 +22,15 @@ native-code: native
 
 byte-code: byte
 
-test:
+test: protobuf_test
+	./protobuf_test
 
 native: protobuf.cmxa
+
+protobuf_test: protobuf.cma protobuf_test.cmo
+	ocamlfind ocamlc $(OCAMLC_OPTS) -thread -linkpkg -custom -o $@ $^
+
+protobuf_test.cmo: protobuf_test.ml protobuf.cma
 
 protobuf.cmxa: protobuf.cmx
 
@@ -37,6 +43,10 @@ protobuf.cma: protobuf.cmo
 
 protobuf.cmo: $(byte_cmo)
 	ocamlfind ocamlc -pack -o $@ $^
+
+clean:
+	-rm protobuf_test *.cmxa *.cmi *.cmx *.cmo *.o .d
+
 
 # Dependencies
 include ../Ocamlrules.mk.in
