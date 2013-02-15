@@ -7,4 +7,4 @@
 *.cmx
 *.o
 .d
-lib/vclock/vclock_test
+lib/protobuf/protobuf_test
