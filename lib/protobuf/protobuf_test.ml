@@ -35,6 +35,18 @@ let unordered =
   R.int32 1           >>= fun num ->
   R.return (num, s, emsg)
 
+let rep_1_bits = simple_bits
+let rep_1 =
+  R.int32_rep 1 >>= R.return
+
+let rep_2_bits = simple_bits ^ simple_bits
+let rep_2 =
+  R.int32_rep 1 >>= R.return
+
+let opt_1_bits = ""
+let opt_1 =
+  R.int32_opt 1 >>= R.return
+
 let assert_success v = function
   | Ok (r, _) ->
     assert (r = v)
@@ -63,6 +75,15 @@ let main () =
   assert_error `Wrong_type (run wrong_type wrong_type_bits);
   assert_success
     (Int32.of_int_exn 300, "testing", Int32.of_int_exn 150)
-    (run unordered unordered_bits)
+    (run unordered unordered_bits);
+  assert_success
+    [Int32.of_int_exn 300]
+    (run rep_1 rep_1_bits);
+  assert_success
+    [Int32.of_int_exn 300; Int32.of_int_exn 300]
+    (run rep_2 rep_2_bits);
+  assert_success
+    None
+    (run opt_1 opt_1_bits)
 
 let () = main ()
