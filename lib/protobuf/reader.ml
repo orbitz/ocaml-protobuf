@@ -3,12 +3,34 @@ open Core.Std
 type error = [ `Incomplete | `Overflow | `Unknown_type | `Wrong_type ]
 
 module State = struct
-  type t = { bits    : Bitstring.bitstring
-	   ; skipped : Protocol.Value.t Int.Map.t
+  type t = { tags : Protocol.Value.t list Int.Map.t
 	   }
 
-  let create bits = { bits; skipped = Int.Map.empty }
-  let append t b = { t with bits = Bitstring.concat [t.bits; b] }
+  let tags_of_bits bits =
+    let append field map =
+      let module F = Protocol.Field in
+      match Int.Map.find map (F.tag field) with
+	| Some v ->
+	  Int.Map.add ~key:(F.tag field) ~data:((F.value field)::v) map
+	| None ->
+	  Int.Map.add ~key:(F.tag field) ~data:([F.value field]) map
+    in
+    let rec tags_of_bits' acc bits =
+      if Bitstring.bitstring_length bits > 0 then begin
+	let open Result.Monad_infix in
+	Protocol.read_next bits >>= fun (field, bits) ->
+	tags_of_bits' (append field acc) bits
+      end
+      else
+	Ok acc
+    in
+    tags_of_bits' (Int.Map.empty) bits
+
+  let create bits =
+    let open Result.Monad_infix in
+    tags_of_bits bits >>= fun tags ->
+    Ok { tags }
+
 end
 
 type 'a t = { run : State.t -> (('a * State.t), error) Result.t }
@@ -17,38 +39,17 @@ type tag = int
 
 let run t s = t.run s
 
-let rec read tag f s =
+let read tag f s =
   let module S = State in
   let open Result.Monad_infix in
-  match Int.Map.find s.S.skipped tag with
-    | Some value ->
-      let s = { s with S.skipped = Int.Map.remove s.S.skipped tag } in
-      f value >>= fun a ->
+  match Int.Map.find s.S.tags tag with
+    | Some values ->
+      let s = { s with S.tags = Int.Map.remove s.S.tags tag } in
+      f values >>= fun a ->
       Ok (a, s)
     | None ->
-      read_new tag f s
-and read_new tag f s =
-  let module P = Protocol in
-  let module F = P.Field in
-  let module S = State in
-  let open Result.Monad_infix in
-  P.read_next s.S.bits >>= function
-    | (field, bits) when F.tag field = tag -> begin
-      f (F.value field) >>= fun a ->
-      Ok (a, {s with S.bits = bits })
-    end
-    | (field, bits) ->
-      let skipped =
-	Int.Map.add
-	  ~key:(F.tag field)
-	  ~data:(F.value field)
-	  s.S.skipped
-      in
-      let s = { S.bits    = bits
-	      ;   skipped = skipped
-	      }
-      in
-      read tag f s
+      f [] >>= fun a ->
+      Ok (a, s)
 
 let make_t tag f =
   { run = read tag f }
@@ -59,21 +60,25 @@ let bool tag =
   make_t
     tag
     (function
-      | Varint v when v = zero -> Ok true
-      | Varint _ -> Ok false
-      | _        -> Error `Wrong_type)
+      | [] ->
+	Error `Incomplete
+      | (Varint v)::_ when v = zero -> Ok true
+      | (Varint _)::_               -> Ok false
+      | _                           -> Error `Wrong_type)
 
 let int32 tag =
   let open Protocol.Value in
   make_t
     tag
     (function
-      | Varint v -> begin
+      | [] ->
+	Error `Incomplete
+      | (Varint v)::_ -> begin
 	match Int32.of_int64 v with
 	  | Some v -> Ok v
 	  | None -> Error `Overflow
       end
-      | Fixed32 v ->
+      | (Fixed32 v)::_ ->
 	Ok v
       | _ ->
 	Error `Wrong_type)
@@ -83,9 +88,11 @@ let int64 tag =
   make_t
     tag
     (function
-      | Varint v ->
+      | [] ->
+	Error `Incomplete
+      | (Varint v)::_ ->
 	Ok v
-      | Fixed64 v ->
+      | (Fixed64 v)::_ ->
 	Ok v
       | _ ->
 	Error `Wrong_type)
@@ -95,7 +102,9 @@ let float tag =
   make_t
     tag
     (function
-      | Fixed32 v ->
+      | [] ->
+	Error `Incomplete
+      | (Fixed32 v)::_ ->
 	Ok (Int32.float_of_bits v)
       | _ ->
 	Error `Wrong_type)
@@ -105,7 +114,9 @@ let double tag =
   make_t
     tag
     (function
-      | Fixed64 v ->
+      | [] ->
+	Error `Incomplete
+      | (Fixed64 v)::_ ->
 	Ok (Int64.float_of_bits v)
       | _ ->
 	Error `Wrong_type)
@@ -115,7 +126,9 @@ let string tag =
   make_t
     tag
     (function
-      | Sequence bits ->
+      | [] ->
+	Error `Incomplete
+      | (Sequence bits)::_ ->
 	Ok (Bitstring.string_of_bitstring bits)
       | _ ->
 	Error `Wrong_type)
@@ -126,9 +139,11 @@ let embd_msg tag r =
   make_t
     tag
     (function
-      | Sequence bits ->
-	let s = State.create bits in
-	run r s >>= fun (a, _) ->
+      | [] ->
+	Error `Incomplete
+      | (Sequence bits)::_ ->
+	State.create bits >>= fun s ->
+	run r s           >>= fun (a, _) ->
 	Ok a
       | _ ->
 	Error `Wrong_type)

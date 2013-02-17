@@ -21,7 +21,7 @@ module Field = struct
   let value t = t.value
 end
 
-type errors = [ `Incomplete | `Overflow | `Unknown_type ]
+type error = [ `Incomplete | `Overflow | `Unknown_type ]
 
 let extract_tag field =
   let tag = Int64.shift_right field 3 in
