@@ -15,7 +15,7 @@ module Field : sig
   val value : t -> Value.t
 end
 
-type errors = [ `Incomplete | `Overflow | `Unknown_type ]
+type error = [ `Incomplete | `Overflow | `Unknown_type ]
 
 val read_next : Bitstring.bitstring ->
-                ((Field.t * Bitstring.bitstring), [> errors ]) Result.t
+                ((Field.t * Bitstring.bitstring), [> error ]) Result.t

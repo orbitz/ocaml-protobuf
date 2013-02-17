@@ -7,8 +7,7 @@ type 'a t
 module State : sig
   type t
 
-  val create : Bitstring.bitstring -> t
-  val append : t -> Bitstring.bitstring -> t
+  val create : Bitstring.bitstring -> (t, [> Protocol.error ]) Result.t
 end
 
 include Monad.S with type 'a t := 'a t
