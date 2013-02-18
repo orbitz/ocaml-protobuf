@@ -1,59 +1,59 @@
 open Core.Std
-open Protobuf.Reader.Monad_infix
-module R = Protobuf.Reader
+open Protobuf.Parser.Monad_infix
+module P = Protobuf.Parser
 
 let simple_bits = "\x08\xAC\x02"
 let simple =
-  R.int32 1 >>= R.return
+  P.int32 1 >>= P.return
 
 let string_bits = "\x12\x07\x74\x65\x73\x74\x69\x6e\x67"
 let string =
-  R.string 2 >>= R.return
+  P.string 2 >>= P.return
 
 let embd_bits = "\x1a\x03\x08\x96\x01"
 let embd =
-  R.embd_msg 3 simple >>= R.return
+  P.embd_msg 3 simple >>= P.return
 
 let complex_bits = "\x08\xAC\x02\x12\x07\x74\x65\x73\x74\x69\x6e\x67\x1a\x03\x08\x96\x01"
 let complex =
-  R.int32 1           >>= fun num ->
-  R.string 2          >>= fun s ->
-  R.embd_msg 3 simple >>= fun emsg ->
-  R.return (num, s, emsg)
+  P.int32 1           >>= fun num ->
+  P.string 2          >>= fun s ->
+  P.embd_msg 3 simple >>= fun emsg ->
+  P.return (num, s, emsg)
 
 let incomplete_bits = "\x08\xAC"
 let incomplete = simple
 
 let wrong_type_bits = simple_bits
 let wrong_type =
-  R.string 1 >>= R.return
+  P.string 1 >>= P.return
 
 let unordered_bits = complex_bits
 let unordered =
-  R.string 2          >>= fun s ->
-  R.embd_msg 3 simple >>= fun emsg ->
-  R.int32 1           >>= fun num ->
-  R.return (num, s, emsg)
+  P.string 2          >>= fun s ->
+  P.embd_msg 3 simple >>= fun emsg ->
+  P.int32 1           >>= fun num ->
+  P.return (num, s, emsg)
 
 let rep_1_bits = simple_bits
 let rep_1 =
-  R.int32_rep 1 >>= R.return
+  P.int32_rep 1 >>= P.return
 
 let rep_2_bits = simple_bits ^ simple_bits
 let rep_2 =
-  R.int32_rep 1 >>= R.return
+  P.int32_rep 1 >>= P.return
 
 let rep_3_bits = simple_bits ^ "\x08\x96\x01"
 let rep_3 =
-  R.int32_rep 1 >>= R.return
+  P.int32_rep 1 >>= P.return
 
 let opt_1_bits = ""
 let opt_1 =
-  R.int32_opt 1 >>= R.return
+  P.int32_opt 1 >>= P.return
 
 let dups_1_bits = rep_3_bits
 let dups_1 =
-  R.int32 1 >>= R.return
+  P.int32 1 >>= P.return
 
 
 let assert_success v = function
@@ -70,8 +70,8 @@ let assert_error err = function
 
 let run r s =
   let open Result.Monad_infix in
-  R.State.create (Bitstring.bitstring_of_string s) >>= fun s ->
-  R.run r s
+  P.State.create (Bitstring.bitstring_of_string s) >>= fun s ->
+  P.run r s
 
 let main () =
   assert_success (Int32.of_int_exn 300) (run simple simple_bits);
