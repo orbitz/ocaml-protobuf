@@ -82,14 +82,16 @@ let check_type f l =
     f v >>= fun v ->
     Ok (v::acc)
   in
+  (*
+   * The values are put in the tags map in reverse order
+   * that they are seen, this foldl will put it back in the
+   * correct order
+   *)
   break_foldl ~f:check ~init:[] l >>= fun l ->
-  Ok (List.rev l)
+  Ok l
 
-let extract_opt = function
-  | [] ->
-    return None
-  | x::_ ->
-    return (Some x)
+let extract_opt l =
+  return (List.last l)
 
 let required = function
   | Some x ->
