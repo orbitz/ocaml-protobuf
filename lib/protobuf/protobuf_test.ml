@@ -55,6 +55,13 @@ let dups_1_bits = rep_3_bits
 let dups_1 =
   P.int32 1 >>= P.return
 
+let enum_bits = simple_bits
+type enum_t = Foo
+let enum_conv = function
+  | 300 -> Ok Foo
+  | _ -> Error `Overflow
+let enum =
+  P.enum 1 enum_conv >>= P.return
 
 let assert_success v = function
   | Ok (r, _) ->
@@ -99,7 +106,9 @@ let main () =
     (run rep_3 rep_3_bits);
   assert_success
     (Int32.of_int_exn 150)
-    (run dups_1 dups_1_bits)
-
+    (run dups_1 dups_1_bits);
+  assert_success
+    Foo
+    (run enum enum_bits)
 
 let () = main ()

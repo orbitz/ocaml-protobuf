@@ -18,6 +18,7 @@ val run          : 'a t -> State.t -> (('a * State.t), error) Result.t
 val bind         : 'a t -> ('a -> 'b t) -> 'b t
 val return       : 'a -> 'a t
 
+val enum         : tag -> (int -> ('a, error) Result.t) -> 'a t
 val bool         : tag -> bool t
 val int32        : tag -> Int32.t t
 val int64        : tag -> Int64.t t
@@ -26,6 +27,7 @@ val double       : tag -> Float.t t
 val string       : tag -> String.t t
 val embd_msg     : tag -> 'a t -> 'a t
 
+val enum_opt     : tag -> (int -> ('a, error) Result.t) -> 'a option t
 val bool_opt     : tag -> bool option t
 val int32_opt    : tag -> Int32.t option t
 val int64_opt    : tag -> Int64.t option t
@@ -34,6 +36,7 @@ val double_opt   : tag -> Float.t option t
 val string_opt   : tag -> String.t option t
 val embd_msg_opt : tag -> 'a t -> 'a option t
 
+val enum_rep     : tag -> (int -> ('a, error) Result.t) -> 'a list t
 val bool_rep     : tag -> bool list t
 val int32_rep    : tag -> Int32.t list t
 val int64_rep    : tag -> Int64.t list t
