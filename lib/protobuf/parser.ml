@@ -116,6 +116,25 @@ let read tag f s =
 let make_t tag f =
   { run = read tag f }
 
+let enum_rep tag c =
+  let open Protocol.Value in
+  make_t
+    tag
+    (check_type
+       (function
+	 | Varint v -> begin
+	   match Int64.to_int v with
+	     | Some v -> c v
+	     | None   -> Error `Overflow
+	 end
+	 | _        -> Error `Wrong_type))
+
+let enum_opt tag c =
+  enum_rep tag c >>= extract_opt
+
+let enum tag c =
+  enum_opt tag c >>= required
+
 let bool_rep tag =
   let open Protocol.Value in
   let open Int64 in
