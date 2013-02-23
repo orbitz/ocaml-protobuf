@@ -44,7 +44,7 @@ let int_of_int64 n =
 
 let read_varint bits =
   let open Result.Monad_infix in
-  Varint.read bits >>= fun (n, rest) ->
+  Varint.of_bitstring bits >>= fun (n, rest) ->
   Ok (Value.Varint n, rest)
 
 let read_fixed64 bits =
@@ -58,11 +58,11 @@ let read_fixed64 bits =
 
 let read_sequence bits =
   let open Result.Monad_infix in
-  Varint.read bits    >>= fun (length, rest) ->
-  int_of_int64 length >>= fun length ->
+  Varint.of_bitstring bits >>= fun (length, rest) ->
+  int_of_int64 length      >>= fun length ->
   bitmatch rest with
-    | { seq : length * 8 : bitstring
-      ; rest : -1 : bitstring
+    | { seq  : length * 8 : bitstring
+      ; rest : -1         : bitstring
       } ->
       Ok (Value.Sequence seq, rest)
     | { _ } ->
@@ -71,7 +71,7 @@ let read_sequence bits =
 let read_fixed32 bits =
   let module Int32 = Old_int32 in
   bitmatch bits with
-    | { n : 32 : littleendian
+    | { n    : 32 : littleendian
       ; rest : -1 : bitstring
       } ->
       Ok (Value.Fixed32 n, rest)
@@ -88,7 +88,7 @@ let read_v_type v_type rest =
 
 let read_next bits =
   let open Result.Monad_infix in
-  Varint.read bits >>= fun (field, rest) ->
+  Varint.of_bitstring bits >>= fun (field, rest) ->
   let tag = extract_tag field in
   let v_type = extract_v_type field in
   read_v_type v_type rest >>= fun (value, rest) ->
