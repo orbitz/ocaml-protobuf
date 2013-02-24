@@ -135,6 +135,9 @@ let enum_opt tag c =
 let enum tag c =
   enum_opt tag c >>= required
 
+let enum_pkd tag c =
+  failwith "nyi"
+
 let bool_rep tag =
   let open Protocol.Value in
   let open Int64 in
@@ -152,6 +155,9 @@ let bool_opt tag =
 
 let bool tag =
   bool_opt tag >>= required
+
+let bool_pkd tag =
+  failwith "nyi"
 
 let int32_rep tag =
   let open Protocol.Value in
@@ -175,6 +181,9 @@ let int32_opt tag =
 let int32 tag =
   int32_opt tag >>= required
 
+let int32_pkd tag =
+  failwith "nyi"
+
 let int64_rep tag =
   let open Protocol.Value in
   make_t
@@ -194,6 +203,9 @@ let int64_opt tag =
 let int64 tag =
   int64_opt tag >>= required
 
+let int64_pkd tag =
+  failwith "nyi"
+
 let float_rep tag =
   let open Protocol.Value in
   make_t
@@ -211,6 +223,9 @@ let float_opt tag =
 let float tag =
   float_opt tag >>= required
 
+let float_pkd tag =
+  failwith "nyi"
+
 let double_rep tag =
   let open Protocol.Value in
   make_t
@@ -227,6 +242,9 @@ let double_opt tag =
 
 let double tag =
   double_opt tag >>= required
+
+let double_pkd tag =
+  failwith "nyi"
 
 let string_rep tag =
   let open Protocol.Value in
