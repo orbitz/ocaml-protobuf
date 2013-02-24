@@ -64,16 +64,30 @@ let enum_conv = function
 let enum =
   P.enum 1 enum_conv >>= P.return
 
-let build_simple () =
+let build_simple i =
   let open Result.Monad_infix in
   let b = B.create () in
-  B.varint b 1 (Int64.of_int 300) >>= fun () ->
+  B.int32 b 1 i >>= fun () ->
   Ok (B.to_string b)
 
-let build_string () =
+let build_string s =
   let open Result.Monad_infix in
   let b = B.create () in
-  B.string b 2 "testing" >>= fun () ->
+  B.string b 2 s >>= fun () ->
+  Ok (B.to_string b)
+
+let build_embd i =
+  let open Result.Monad_infix in
+  let b = B.create () in
+  B.embd_msg b 3 i build_simple >>= fun () ->
+  Ok (B.to_string b)
+
+let build_complex (i1, s, i2) =
+  let open Result.Monad_infix in
+  let b = B.create () in
+  B.int32 b 1 i1                 >>= fun () ->
+  B.string b 2 s                 >>= fun () ->
+  B.embd_msg b 3 i2 build_simple >>= fun () ->
   Ok (B.to_string b)
 
 let assert_p_success v = function
@@ -131,9 +145,16 @@ let main () =
     (run enum enum_bits);
   assert_b_success
     simple_bits
-    (build_simple ());
+    (build_simple (Int32.of_int_exn 300));
   assert_b_success
     string_bits
-    (build_string ())
+    (build_string "testing");
+  assert_b_success
+    embd_bits
+    (build_embd (Int32.of_int_exn 150));
+  assert_b_success
+    complex_bits
+    (build_complex
+       (Int32.of_int_exn 300, "testing", Int32.of_int_exn 150))
 
 let () = main ()

@@ -15,27 +15,49 @@ let to_string = Buffer.contents
 let to_field tag v =
   Protocol.Field.create tag v
 
-let varint t tag v =
-  let f = to_field tag (Value.Varint v) in
-  Ok (Buffer.add_string t (Protocol.to_string f))
+let int32_of_int64 v =
+  match Int32.of_int64 v with
+    | Some v ->
+      Ok v
+    | None ->
+      Error `Overflow
 
-let enum t tag v f =
-  failwith "nyi"
+let add_field t f =
+  Buffer.add_string t (Protocol.to_string f);
+  Ok ()
+
+let enum t tag v conv =
+  match conv v with
+    | Ok v ->
+      let f = to_field tag (Value.Varint (Int64.of_int v)) in
+      add_field t f
+    | Error `Overflow ->
+      Error `Overflow
 
 let bool t tag v =
-  failwith "nyi"
+  let f =
+    if v then
+      to_field tag (Value.Varint Int64.one)
+    else
+      to_field tag (Value.Varint Int64.zero)
+  in
+  add_field t f
 
 let int64 t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Varint v) in
+  add_field t f
 
 let int32 t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Varint (Int64.of_int32 v)) in
+  add_field t f
 
 let fixed64 t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Fixed64 v) in
+  add_field t f
 
 let fixed32 t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Fixed32 v) in
+  add_field t f
 
 let sint64 t tag v =
   failwith "nyi"
@@ -44,10 +66,15 @@ let sint32 t tag v =
   failwith "nyi"
 
 let double t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Fixed64 (Int64.bits_of_float v)) in
+  add_field t f
 
 let float t tag v =
-  failwith "nyi"
+  let open Result.Monad_infix in
+  let i64 = Int64.bits_of_float v in
+  int32_of_int64 i64 >>= fun v ->
+  let f = to_field tag (Value.Fixed32 v) in
+  add_field t f
 
 let string t tag v =
   (*
@@ -62,10 +89,11 @@ let string t tag v =
       tag
       (Value.Sequence (Bitstring.bitstring_of_string v))
   in
-  Ok (Buffer.add_string t (Protocol.to_string f))
+  add_field t f
 
-let builder t tag v =
-  failwith "nyi"
-
-let embd_msg t tag v f =
-  failwith "nyi"
+let embd_msg t tag v conv =
+  match conv v with
+    | Ok v ->
+      string t tag v
+    | Error `Overflow ->
+      Error `Overflow
