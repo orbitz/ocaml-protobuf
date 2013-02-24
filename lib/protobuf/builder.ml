@@ -27,12 +27,10 @@ let add_field t f =
   Ok ()
 
 let enum t tag v conv =
-  match conv v with
-    | Ok v ->
-      let f = to_field tag (Value.Varint (Int64.of_int v)) in
-      add_field t f
-    | Error `Overflow ->
-      Error `Overflow
+  let open Result.Monad_infix in
+  conv v >>= fun v ->
+  let f = to_field tag (Value.Varint (Int64.of_int v)) in
+  add_field t f
 
 let bool t tag v =
   let f =
@@ -92,8 +90,6 @@ let string t tag v =
   add_field t f
 
 let embd_msg t tag v conv =
-  match conv v with
-    | Ok v ->
-      string t tag v
-    | Error `Overflow ->
-      Error `Overflow
+  let open Result.Monad_infix in
+  conv v >>= fun v ->
+  string t tag v
