@@ -1,6 +1,7 @@
 open Core.Std
 open Protobuf.Parser.Monad_infix
 module P = Protobuf.Parser
+module B = Protobuf.Builder
 
 let simple_bits = "\x08\xAC\x02"
 let simple =
@@ -63,15 +64,33 @@ let enum_conv = function
 let enum =
   P.enum 1 enum_conv >>= P.return
 
-let assert_success v = function
+let build_simple () =
+  let open Result.Monad_infix in
+  let b = B.create () in
+  B.varint b 1 (Int64.of_int 300) >>= fun () ->
+  Ok (B.to_string b)
+
+let build_string () =
+  let open Result.Monad_infix in
+  let b = B.create () in
+  B.string b 2 "testing" >>= fun () ->
+  Ok (B.to_string b)
+
+let assert_p_success v = function
   | Ok (r, _) ->
     assert (r = v)
   | _ ->
     assert false
 
-let assert_error err = function
+let assert_p_error err = function
   | Error e when e = err ->
     ()
+  | _ ->
+    assert false
+
+let assert_b_success v = function
+  | Ok r ->
+    assert (r = v)
   | _ ->
     assert false
 
@@ -81,34 +100,40 @@ let run r s =
   P.run r s
 
 let main () =
-  assert_success (Int32.of_int_exn 300) (run simple simple_bits);
-  assert_success "testing" (run string string_bits);
-  assert_success (Int32.of_int_exn 150) (run embd embd_bits);
-  assert_success
+  assert_p_success (Int32.of_int_exn 300) (run simple simple_bits);
+  assert_p_success "testing" (run string string_bits);
+  assert_p_success (Int32.of_int_exn 150) (run embd embd_bits);
+  assert_p_success
     (Int32.of_int_exn 300, "testing", Int32.of_int_exn 150)
     (run complex complex_bits);
-  assert_error `Incomplete (run incomplete incomplete_bits);
-  assert_error `Wrong_type (run wrong_type wrong_type_bits);
-  assert_success
+  assert_p_error `Incomplete (run incomplete incomplete_bits);
+  assert_p_error `Wrong_type (run wrong_type wrong_type_bits);
+  assert_p_success
     (Int32.of_int_exn 300, "testing", Int32.of_int_exn 150)
     (run unordered unordered_bits);
-  assert_success
+  assert_p_success
     [Int32.of_int_exn 300]
     (run rep_1 rep_1_bits);
-  assert_success
+  assert_p_success
     [Int32.of_int_exn 300; Int32.of_int_exn 300]
     (run rep_2 rep_2_bits);
-  assert_success
+  assert_p_success
     None
     (run opt_1 opt_1_bits);
-  assert_success
+  assert_p_success
     [Int32.of_int_exn 300; Int32.of_int_exn 150]
     (run rep_3 rep_3_bits);
-  assert_success
+  assert_p_success
     (Int32.of_int_exn 150)
     (run dups_1 dups_1_bits);
-  assert_success
+  assert_p_success
     Foo
-    (run enum enum_bits)
+    (run enum enum_bits);
+  assert_b_success
+    simple_bits
+    (build_simple ());
+  assert_b_success
+    string_bits
+    (build_string ())
 
 let () = main ()

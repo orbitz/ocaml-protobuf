@@ -16,9 +16,9 @@ module Field = struct
 	   ; value : Value.t
 	   }
 
-
-  let tag   t = t.tag
-  let value t = t.value
+  let create tag value = { tag; value }
+  let tag   t          = t.tag
+  let value t          = t.value
 end
 
 type error = [ `Incomplete | `Overflow | `Unknown_type ]
@@ -34,6 +34,10 @@ let extract_tag field =
 let v_type_mask = Int64.of_int 7
 let extract_v_type field =
   Int64.to_int_exn (Int64.bit_and field v_type_mask)
+
+let to_key tag typ =
+  (* tag lsl 3 lor typ *)
+  Int64.(bit_or (shift_left (of_int tag) 3) (of_int typ))
 
 let int_of_int64 n =
   match Int64.to_int n with
@@ -86,11 +90,39 @@ let read_v_type v_type rest =
     | 5 -> read_fixed32 rest
     | _ -> Error `Unknown_type
 
-let read_next bits =
+let next bits =
   let open Result.Monad_infix in
   Varint.of_bitstring bits >>= fun (field, rest) ->
   let tag = extract_tag field in
   let v_type = extract_v_type field in
   read_v_type v_type rest >>= fun (value, rest) ->
-  Ok ({Field.tag = tag; value}, rest)
+  Ok (Field.create tag value, rest)
 
+let string_of_varint tag v =
+  let key = to_key tag 0 in
+  Varint.to_string key ^ Varint.to_string v
+
+let string_of_fixed64 tag v =
+  failwith "nyi"
+
+let string_of_sequence tag v =
+  let key = to_key tag 2 in
+  let s = Bitstring.string_of_bitstring v in
+  (Varint.to_string key ^
+     Varint.to_string (Int64.of_int (String.length s)) ^
+     s)
+
+let string_of_fixed32 tag v =
+  failwith "nyi"
+
+let to_string f =
+  let tag = Field.tag f in
+  match Field.value f with
+    | Value.Varint v ->
+      string_of_varint tag v
+    | Value.Fixed64 v ->
+      string_of_fixed64 tag v
+    | Value.Sequence v ->
+      string_of_sequence tag v
+    | Value.Fixed32 v ->
+      string_of_fixed32 tag v

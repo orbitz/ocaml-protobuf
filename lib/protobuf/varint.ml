@@ -35,11 +35,10 @@ let to_string t =
 	(Int64.bit_and one_byte t)
     in
     let t = Int64.shift_right t 7 in
-    if Int64.equal t Int64.zero then begin
-      let byte = byte lor (1 lsl 7) in
+    if Int64.equal t Int64.zero then
       Buffer.add_char b (Char.of_int_exn byte)
-    end
     else begin
+      let byte = byte lor (1 lsl 7) in
       Buffer.add_char b (Char.of_int_exn byte);
       next_byte t
     end

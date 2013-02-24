@@ -18,7 +18,7 @@ module State = struct
     let rec tags_of_bits' acc bits =
       if Bitstring.bitstring_length bits > 0 then begin
 	let open Result.Monad_infix in
-	Protocol.read_next bits >>= fun (field, bits) ->
+	Protocol.next bits >>= fun (field, bits) ->
 	tags_of_bits' (append field acc) bits
       end
       else
