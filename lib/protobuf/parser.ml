@@ -184,6 +184,18 @@ let int32 tag =
 let int32_pkd tag =
   failwith "nyi"
 
+let sint32_rep tag =
+  failwith "nyi"
+
+let sint32_opt tag =
+  failwith "nyi"
+
+let sint32 tag =
+  failwith "nyi"
+
+let sint32_pkd tag =
+  failwith "nyi"
+
 let int64_rep tag =
   let open Protocol.Value in
   make_t
@@ -204,6 +216,18 @@ let int64 tag =
   int64_opt tag >>= required
 
 let int64_pkd tag =
+  failwith "nyi"
+
+let sint64_rep tag =
+  failwith "nyi"
+
+let sint64_opt tag =
+  failwith "nyi"
+
+let sint64 tag =
+  failwith "nyi"
+
+let sint64_pkd tag =
   failwith "nyi"
 
 let float_rep tag =
