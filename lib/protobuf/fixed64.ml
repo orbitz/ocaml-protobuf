@@ -4,7 +4,7 @@ type t = Int64.t
 
 type error = [ `Incomplete ]
 
-let next bits =
+let of_bitstring bits =
   bitmatch bits with
     | { n    : 64 : littleendian
       ; rest : -1 : bitstring
