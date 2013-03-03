@@ -90,6 +90,26 @@ let check_type f l =
   break_foldl ~f:check ~init:[] l >>= fun l ->
   Ok l
 
+let rec consume_type d f bits =
+  if Bitstring.bitstring_length bits = 0 then
+    Ok []
+  else begin
+    let open Result.Monad_infix in
+    d bits                >>= fun (v, rest) ->
+    f v                   >>= fun v ->
+    consume_type d f rest >>= fun r ->
+    Ok (v::r)
+  end
+
+let check_pkd_type d f l =
+  match List.last l with
+  | None ->
+    Ok []
+  | Some (Protocol.Value.Sequence last) ->
+    consume_type d f last
+  | Some _ ->
+    Error `Wrong_type
+
 let extract_opt l =
   return (List.last l)
 
@@ -136,19 +156,26 @@ let enum tag c =
   enum_opt tag c >>= required
 
 let enum_pkd tag c =
-  failwith "nyi"
+  make_t
+    tag
+    (check_pkd_type
+       Varint.of_bitstring
+       (fun v ->
+	 match Int64.to_int v with
+	   | Some v -> c v
+	   | None   -> Error `Overflow))
+
+let bool_conv = function
+  | 0 -> Ok false
+  | 1 -> Ok true
+  | _ -> Error `Overflow
 
 let bool_rep tag =
   let open Protocol.Value in
   let open Int64 in
-  make_t
+  enum_rep
     tag
-    (check_type
-       (function
-	 | Varint v when v = zero -> Ok true
-	 | Varint v when v = one  -> Ok false
-	 | Varint _               -> Error `Overflow
-	 | _                      -> Error `Wrong_type))
+    bool_conv
 
 let bool_opt tag =
   bool_rep tag >>= extract_opt
@@ -157,7 +184,11 @@ let bool tag =
   bool_opt tag >>= required
 
 let bool_pkd tag =
-  failwith "nyi"
+  let open Protocol.Value in
+  let open Int64 in
+  enum_pkd
+    tag
+    bool_conv
 
 let int32_rep tag =
   let open Protocol.Value in
@@ -182,7 +213,14 @@ let int32 tag =
   int32_opt tag >>= required
 
 let int32_pkd tag =
-  failwith "nyi"
+  make_t
+    tag
+    (check_pkd_type
+       Varint.of_bitstring
+       (fun v ->
+	 match Int32.of_int64 v with
+	   | Some v -> Ok v
+	   | None   -> Error `Overflow))
 
 let sint32_rep tag =
   failwith "nyi"
@@ -216,7 +254,11 @@ let int64 tag =
   int64_opt tag >>= required
 
 let int64_pkd tag =
-  failwith "nyi"
+  make_t
+    tag
+    (check_pkd_type
+       Varint.of_bitstring
+       (fun v -> Ok v))
 
 let sint64_rep tag =
   failwith "nyi"
@@ -248,7 +290,11 @@ let float tag =
   float_opt tag >>= required
 
 let float_pkd tag =
-  failwith "nyi"
+  make_t
+    tag
+    (check_pkd_type
+       Fixed32.of_bitstring
+       (fun v -> Ok (Int32.float_of_bits v)))
 
 let double_rep tag =
   let open Protocol.Value in
@@ -268,7 +314,11 @@ let double tag =
   double_opt tag >>= required
 
 let double_pkd tag =
-  failwith "nyi"
+  make_t
+    tag
+    (check_pkd_type
+       Fixed64.of_bitstring
+       (fun v -> Ok (Int64.float_of_bits v)))
 
 let string_rep tag =
   let open Protocol.Value in

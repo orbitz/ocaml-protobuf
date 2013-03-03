@@ -50,7 +50,7 @@ let read_varint bits =
 
 let read_fixed64 bits =
   let open Result.Monad_infix in
-  Fixed64.next bits >>= fun (n, rest) ->
+  Fixed64.of_bitstring bits >>= fun (n, rest) ->
   Ok (Value.Fixed64 n, rest)
 
 let read_sequence bits =
@@ -67,7 +67,7 @@ let read_sequence bits =
 
 let read_fixed32 bits =
   let open Result.Monad_infix in
-  Fixed32.next bits >>= fun (n, rest) ->
+  Fixed32.of_bitstring bits >>= fun (n, rest) ->
   Ok (Value.Fixed32 n, rest)
 
 let read_v_type v_type rest =
