@@ -227,10 +227,10 @@ let sint32_rep tag =
   return (List.map ~f:Sint32.decode ints)
 
 let sint32_opt tag =
-  int32_rep tag >>= extract_opt
+  sint32_rep tag >>= extract_opt
 
 let sint32 tag =
-  int32_opt tag >>= required
+  sint32_opt tag >>= required
 
 let sint32_pkd tag =
   int32_pkd tag >>= fun ints ->
@@ -267,10 +267,10 @@ let sint64_rep tag =
   return (List.map ~f:Sint64.decode ints)
 
 let sint64_opt tag =
-  int64_rep tag >>= extract_opt
+  sint64_rep tag >>= extract_opt
 
 let sint64 tag =
-  int64_opt tag >>= required
+  sint64_opt tag >>= required
 
 let sint64_pkd tag =
   int64_pkd tag >>= fun ints ->
