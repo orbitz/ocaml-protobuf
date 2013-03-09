@@ -64,6 +64,14 @@ let enum_conv = function
 let enum =
   P.enum 1 enum_conv >>= P.return
 
+let sint32_bits = simple_bits
+let sint32 =
+  P.sint32 1 >>= P.return
+
+let sint64_bits = simple_bits
+let sint64 =
+  P.sint64 1 >>= P.return
+
 let build_simple i =
   let open Result.Monad_infix in
   let b = B.create () in
@@ -155,6 +163,12 @@ let main () =
   assert_b_success
     complex_bits
     (build_complex
-       (Int32.of_int_exn 300, "testing", Int32.of_int_exn 150))
+       (Int32.of_int_exn 300, "testing", Int32.of_int_exn 150));
+  assert_p_success
+    (Int32.of_int_exn 150)
+    (run sint32 sint32_bits);
+  assert_p_success
+    (Int64.of_int 150)
+    (run sint64 sint64_bits)
 
 let () = main ()
