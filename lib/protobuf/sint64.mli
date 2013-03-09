@@ -2,7 +2,5 @@ open Core.Std
 
 type t = Int64.t
 
-type error = [ `Incomplete | `Overflow ]
-
-val of_bitstring : Bitstring.bitstring -> ((t * Bitstring.bitstring), [> error ]) Result.t
-val to_string    : t -> string
+val encode : Int64.t -> t
+val decode : t -> Int64.t
