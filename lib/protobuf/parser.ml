@@ -223,16 +223,18 @@ let int32_pkd tag =
 	   | None   -> Error `Overflow))
 
 let sint32_rep tag =
-  failwith "nyi"
+  int32_rep tag >>= fun ints ->
+  return (List.map ~f:Sint32.decode ints)
 
 let sint32_opt tag =
-  failwith "nyi"
+  int32_rep tag >>= extract_opt
 
 let sint32 tag =
-  failwith "nyi"
+  int32_opt tag >>= required
 
 let sint32_pkd tag =
-  failwith "nyi"
+  int32_pkd tag >>= fun ints ->
+  return (List.map ~f:Sint32.decode ints)
 
 let int64_rep tag =
   let open Protocol.Value in
@@ -261,16 +263,18 @@ let int64_pkd tag =
        (fun v -> Ok v))
 
 let sint64_rep tag =
-  failwith "nyi"
+  int64_rep tag >>= fun ints ->
+  return (List.map ~f:Sint64.decode ints)
 
 let sint64_opt tag =
-  failwith "nyi"
+  int64_rep tag >>= extract_opt
 
 let sint64 tag =
-  failwith "nyi"
+  int64_opt tag >>= required
 
 let sint64_pkd tag =
-  failwith "nyi"
+  int64_pkd tag >>= fun ints ->
+  return (List.map ~f:Sint64.decode ints)
 
 let float_rep tag =
   let open Protocol.Value in
