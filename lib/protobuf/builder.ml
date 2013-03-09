@@ -58,10 +58,15 @@ let fixed32 t tag v =
   add_field t f
 
 let sint64 t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Varint (Sint64.encode v)) in
+  add_field t f
 
 let sint32 t tag v =
-  failwith "nyi"
+  let f = to_field tag (Value.Varint
+			  (Int64.of_int32
+			     (Sint32.encode v)))
+  in
+  add_field t f
 
 let double t tag v =
   let f = to_field tag (Value.Fixed64 (Int64.bits_of_float v)) in
