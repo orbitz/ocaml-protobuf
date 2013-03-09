@@ -1,6 +1,3 @@
-(* Need to save this for Bitstring *)
-module Old_int32 = Int32
-
 open Core.Std
 
 module Value = struct
@@ -52,13 +49,9 @@ let read_varint bits =
   Ok (Value.Varint n, rest)
 
 let read_fixed64 bits =
-  bitmatch bits with
-    | { n : 64 : littleendian
-      ; rest : -1 : bitstring
-      } ->
-      Ok (Value.Fixed64 n, rest)
-    | { _ } ->
-      Error `Incomplete
+  let open Result.Monad_infix in
+  Fixed64.of_bitstring bits >>= fun (n, rest) ->
+  Ok (Value.Fixed64 n, rest)
 
 let read_sequence bits =
   let open Result.Monad_infix in
@@ -73,14 +66,9 @@ let read_sequence bits =
       Error `Incomplete
 
 let read_fixed32 bits =
-  let module Int32 = Old_int32 in
-  bitmatch bits with
-    | { n    : 32 : littleendian
-      ; rest : -1 : bitstring
-      } ->
-      Ok (Value.Fixed32 n, rest)
-    | { _ } ->
-      Error `Incomplete
+  let open Result.Monad_infix in
+  Fixed32.of_bitstring bits >>= fun (n, rest) ->
+  Ok (Value.Fixed32 n, rest)
 
 let read_v_type v_type rest =
   match v_type with
