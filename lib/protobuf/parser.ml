@@ -119,7 +119,24 @@ let required = function
   | None ->
     fail `Incomplete
 
-let run t s = t.run s
+(*
+ * Handling all the errors is ugly but it's so we
+ * can get a n open polymorphic vairant in the type
+ * of [run], to make it work nicely in a monad
+ *)
+let run t s =
+  match t.run s with
+    | Ok (v, s) ->
+      Ok (v, s)
+    | Error `Incomplete ->
+      Error `Incomplete
+    | Error `Overflow ->
+      Error `Overflow
+    | Error `Unknown_type ->
+      Error `Unknown_type
+    | Error `Wrong_type ->
+      Error `Wrong_type
+
 
 let read tag f s =
   let module S = State in
