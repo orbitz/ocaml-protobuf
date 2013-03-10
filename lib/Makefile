@@ -20,7 +20,7 @@ $(SUBDIRS):
 	$(MAKE) -C $@ native-code
 	$(MAKE) -C $@ byte-code
 
-$(subdirs_test):
+$(subdirs_test): $(SUBDIRS)
 	$(MAKE) -C $(patsubst %_test,%,$@) test
 
 $(subdirs_clean):
