@@ -79,7 +79,7 @@ let float t tag v =
   let f = to_field tag (Value.Fixed32 v) in
   add_field t f
 
-let string t tag v =
+let bytes t tag v =
   (*
    * NOTE:
    * Going back and forth between a string
@@ -93,6 +93,8 @@ let string t tag v =
       (Value.Sequence (Bitstring.bitstring_of_string v))
   in
   add_field t f
+
+let string = bytes
 
 let embd_msg t tag v conv =
   let open Result.Monad_infix in

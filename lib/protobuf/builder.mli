@@ -20,4 +20,5 @@ val sint32   : t -> tag -> Int32.t -> (unit, [> error ]) Result.t
 val double   : t -> tag -> Float.t -> (unit, [> error ]) Result.t
 val float    : t -> tag -> Float.t -> (unit, [> error ]) Result.t
 val string   : t -> tag -> string -> (unit, [> error ]) Result.t
+val bytes    : t -> tag -> string -> (unit, [> error ]) Result.t
 val embd_msg : t -> tag -> 'a -> ('a -> (string, [> error ] as 'b) Result.t) -> (unit, 'b) Result.t
