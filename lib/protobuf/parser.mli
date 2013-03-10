@@ -25,6 +25,7 @@ val sint64       : tag -> Int64.t t
 val float        : tag -> Float.t t
 val double       : tag -> Float.t t
 val string       : tag -> String.t t
+val bytes        : tag -> String.t t
 val embd_msg     : tag -> 'a t -> 'a t
 
 val enum_opt     : tag -> (int -> ('a, error) Result.t) -> 'a option t
@@ -36,6 +37,7 @@ val sint64_opt   : tag -> Int64.t option t
 val float_opt    : tag -> Float.t option t
 val double_opt   : tag -> Float.t option t
 val string_opt   : tag -> String.t option t
+val bytes_opt    : tag -> String.t option t
 val embd_msg_opt : tag -> 'a t -> 'a option t
 
 val enum_rep     : tag -> (int -> ('a, error) Result.t) -> 'a list t
@@ -47,6 +49,7 @@ val sint64_rep   : tag -> Int64.t list t
 val float_rep    : tag -> Float.t list t
 val double_rep   : tag -> Float.t list t
 val string_rep   : tag -> String.t list t
+val bytes_rep    : tag -> String.t list t
 val embd_msg_rep : tag -> 'a t -> 'a list t
 
 val enum_pkd     : tag -> (int -> ('a, error) Result.t) -> 'a list t
