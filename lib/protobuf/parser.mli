@@ -14,7 +14,7 @@ include Monad.S with type 'a t := 'a t
 
 type tag = int
 
-val run          : 'a t -> State.t -> (('a * State.t), error) Result.t
+val run          : 'a t -> State.t -> (('a * State.t), [> error ]) Result.t
 
 val enum         : tag -> (int -> ('a, error) Result.t) -> 'a t
 val bool         : tag -> bool t
