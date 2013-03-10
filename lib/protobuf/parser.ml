@@ -324,7 +324,7 @@ let double_pkd tag =
        Fixed64.of_bitstring
        (fun v -> Ok (Int64.float_of_bits v)))
 
-let string_rep tag =
+let bytes_rep tag =
   let open Protocol.Value in
   make_t
     tag
@@ -335,11 +335,15 @@ let string_rep tag =
 	 | _ ->
 	   Error `Wrong_type))
 
-let string_opt tag =
-  string_rep tag >>= extract_opt
+let bytes_opt tag =
+  bytes_rep tag >>= extract_opt
 
-let string tag =
-  string_opt tag >>= required
+let bytes tag =
+  bytes_opt tag >>= required
+
+let string_rep = bytes_rep
+let string_opt = bytes_opt
+let string     = bytes
 
 let embd_msg_rep tag r =
   let open Protocol.Value in
