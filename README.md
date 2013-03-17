@@ -21,3 +21,7 @@ Issues and pull requests are welcomed.
 * Supports Monad model for consuming messages
 
 * Supports Buffer-like model for producing messages
+
+#### 0.0.2
+
+* Fixed not installing all .cmi files
