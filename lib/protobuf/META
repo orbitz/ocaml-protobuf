@@ -1,6 +1,6 @@
 name="protobuf"
 version="0.0.0"
 description="Protobuf implementation"
-requires="core"
+requires="core,bitstring"
 archive(byte)="protobuf.cma"
 archive(native)="protobuf.cmxa"
