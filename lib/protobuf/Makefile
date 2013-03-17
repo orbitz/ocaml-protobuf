@@ -20,7 +20,7 @@ all: native byte
 
 install: all
 	ocamlfind install protobuf META protobuf.cmxa protobuf.cma protobuf.a \
-	$(native_cmx) $(native_cmi)
+	protobuf.cmi $(native_cmx) $(native_cmi) $(sources_mli)
 
 native-code: native
 
