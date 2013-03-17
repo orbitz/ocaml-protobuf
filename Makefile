@@ -1,7 +1,12 @@
-.PHONY: all clean test
+.PHONY: all lib clean test install
 
-all:
+all: lib
+
+lib:
 	$(MAKE) -C lib
+
+install: all
+	$(MAKE) -C lib install
 
 test:
 	$(MAKE) -C lib test

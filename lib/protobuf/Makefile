@@ -14,9 +14,13 @@ byte_cmo=$(sources:%.ml=%.cmo)
 
 native_cmi=$(sources_mli:%.mli=%.cmi)
 
-.PHONY: all native byte native-code byte-code test clean
+.PHONY: all install native byte native-code byte-code test clean
 
 all: native byte
+
+install: all
+	ocamlfind install protobuf META protobuf.cmxa protobuf.cma protobuf.a \
+	$(native_cmx) $(native_cmi)
 
 native-code: native
 
