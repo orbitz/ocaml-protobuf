@@ -4,6 +4,8 @@ interface, and building Protobuf messages is through a Buffer-like interface.
 
 Examples can be seen in protobuf_test.ml.
 
+Issues and pull requests are welcomed.
+
 #### Known Issues
 
 * Not heavily tested
