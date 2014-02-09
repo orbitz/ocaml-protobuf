@@ -65,6 +65,10 @@ include (Monad.Make (struct
 	  let t' = fail `Wrong_type in
 	  t'.run s
     }
+
+  let map t ~f =
+    bind t (fun x -> return (f x))
+
 end) : Monad.S with type 'a t := 'a _t)
 
 
