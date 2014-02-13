@@ -6,9 +6,9 @@ subdirs_clean = $(all_apps:%=%_clean)
 
 subdirs_test  = $(all_apps:%=%_test)
 
-subdirs_install  = $(all_apps:%=%_install)
+subdirs_install = $(all_apps:%=%_install)
 
-.PHONY: all install test clean $(SUBDIRS) $(subdirs_clean) $(subdirs_test) $(subdirs_install)
+.PHONY: all test clean $(SUBDIRS) $(subdirs_clean) $(subdirs_test) $(subdirs_install)
 
 all: $(SUBDIRS)
 
@@ -24,10 +24,10 @@ $(SUBDIRS):
 	$(MAKE) -C $@ native-code
 	$(MAKE) -C $@ byte-code
 
-$(subdirs_install): $(SUBDIRS)
+$(subdirs_install):
 	$(MAKE) -C $(patsubst %_install,%,$@) install
 
-$(subdirs_test): $(SUBDIRS)
+$(subdirs_test):
 	$(MAKE) -C $(patsubst %_test,%,$@) test
 
 $(subdirs_clean):

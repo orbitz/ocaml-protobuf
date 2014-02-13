@@ -7,4 +7,4 @@
 *.cmx
 *.o
 .d
-lib/protobuf/protobuf_test
+
