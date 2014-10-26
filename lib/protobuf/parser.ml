@@ -66,8 +66,7 @@ include (Monad.Make (struct
 	  t'.run s
     }
 
-  let map t ~f =
-    bind t (fun x -> return (f x))
+  let map = `Define_using_bind
 
 end) : Monad.S with type 'a t := 'a _t)
 
